@@ -92,6 +92,7 @@ function DashboardPage() {
   const [installations, setInstallations] = useState<Installation[]>([]);
   const [loading, setLoading] = useState(true);
   const [githubError, setGithubError] = useState('');
+  const [runsError, setRunsError] = useState('');
   const [connecting, setConnecting] = useState(false);
 
   async function connectInstallation(id: number) {
@@ -126,7 +127,10 @@ function DashboardPage() {
             setGithubError('Could not load repositories from GitHub.');
             return [];
           }),
-          listRuns().catch(() => []),
+          listRuns().catch(() => {
+            setRunsError('Could not load recent runs.');
+            return [];
+          }),
         ]);
         if (cancelled) return;
         setRepos(repoList);
@@ -325,14 +329,19 @@ function DashboardPage() {
                 <GitPullRequest size={18} className="text-[#131B4D]" />
                 <h2 className="fb-serif m-0 text-lg text-[#131B4D]">Recent runs</h2>
               </div>
-              {runs.length === 0 ? (
+              {runsError && (
+                <p className="mt-3 text-[13px] text-[#C23B4B]" role="alert">
+                  {runsError}
+                </p>
+              )}
+              {runs.length === 0 && !runsError ? (
                 <p className="mt-3 text-sm leading-relaxed text-[#545C8C]">
                   No runs yet.{' '}
                   {connected
                     ? 'Open a pull request in a connected repository to start one.'
                     : 'Connect GitHub to start testing your pull requests.'}
                 </p>
-              ) : (
+              ) : runs.length > 0 ? (
                 <ul className="mt-4 list-none space-y-2 p-0">
                   {runs.map(run => (
                     <li
@@ -357,7 +366,7 @@ function DashboardPage() {
                     </li>
                   ))}
                 </ul>
-              )}
+              ) : null}
             </section>
           </div>
         </main>

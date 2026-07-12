@@ -9,7 +9,6 @@ const COLUMNS = [
       { label: 'Features', href: '/#features' },
       { label: 'How it works', href: '/#how-it-works' },
       { label: 'Pricing', href: '/#pricing' },
-      { label: 'Docs', href: '/#docs' },
     ],
   },
   {
@@ -19,13 +18,6 @@ const COLUMNS = [
       { label: 'Reviews', href: '/#reviews' },
     ],
   },
-  {
-    heading: 'Legal',
-    links: [
-      { label: 'Privacy', href: '#' },
-      { label: 'Terms', href: '#' },
-    ],
-  },
 ]
 
 export default function Footer() {
@@ -33,7 +25,7 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-black/5 bg-white px-4 pb-10 pt-14 sm:px-8">
-      <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <Link
             to="/"

@@ -16,7 +16,7 @@ export function PricingSection() {
         setPlans(p);
         setMessage(p.length ? '' : 'Billing is unavailable.');
       })
-      .catch(e => setMessage(e.message));
+      .catch(() => setMessage('Could not load plans. Please try again later.'));
     me().then(user => {
       if (user) {
         setEmail(user.email);
@@ -93,7 +93,7 @@ export function PricingSection() {
                       autoComplete="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      className="mt-2 w-full rounded-xl border border-[#DEE5FD] bg-white p-3 text-sm text-[#131B4D] outline-none focus:border-[#2B4BF2]"
+                      className="fb-input mt-2"
                     />
                   </>
                 )}

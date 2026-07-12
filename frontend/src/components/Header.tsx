@@ -28,11 +28,6 @@ export default function Header() {
             className="text-[#3D4577] no-underline transition hover:text-[#131B4D]">
             Pricing
           </a>
-          <a
-            href="/#docs"
-            className="text-[#3D4577] no-underline transition hover:text-[#131B4D]">
-            Docs
-          </a>
         </div>
 
         <div className="flex items-center gap-4">
