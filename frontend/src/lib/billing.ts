@@ -1,0 +1,4 @@
+export interface PublicPlan{slug:'starter'|'scale';name:string;price:number;currency:'USD';interval:'month';includedCredits:number;features:string[]}
+const base=((import.meta as ImportMeta&{env?:{VITE_API_URL?:string}}).env?.VITE_API_URL??'http://localhost:3001').replace(/\/$/,'')
+export async function fetchPlans():Promise<PublicPlan[]>{const r=await fetch(`${base}/v1/billing/plans`);if(!r.ok)throw new Error('Billing is unavailable.');return ((await r.json()) as {plans:PublicPlan[]}).plans}
+export async function createCheckout(plan:PublicPlan['slug'],email:string){const r=await fetch(`${base}/v1/billing/checkout`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({plan,email})});if(!r.ok)throw new Error('Checkout is unavailable.');return r.json() as Promise<{id:string;url:string}>}

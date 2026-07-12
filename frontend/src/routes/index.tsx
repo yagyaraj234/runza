@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { ArrowRight, CheckCircle2, GitPullRequest, Play, ShieldCheck, Video } from 'lucide-react'
+import { PricingSection } from '../components/PricingSection'
 
 export const Route = createFileRoute('/')({ component: HomePage })
 
@@ -92,7 +93,7 @@ function HomePage() {
             Freebug explores your app, generates Playwright tests with your preferred AI model, and returns reproducible bugs with videos, traces, and accessibility evidence.
           </p>
           <WaitlistForm />
-          <p className="mt-5 text-xs font-medium uppercase tracking-[0.13em] text-[var(--sea-ink-soft)]/80">Private beta · Bring any OpenAI-compatible model · No credit card</p>
+          <p className="mt-5 text-xs font-medium uppercase tracking-[0.13em] text-[var(--sea-ink-soft)]/80">Private beta · Bring any OpenAI-compatible model</p>
         </div>
       </section>
 
@@ -112,6 +113,8 @@ function HomePage() {
           </article>
         ))}
       </section>
+
+      <PricingSection />
 
       <section className="island-shell mt-6 flex flex-col gap-6 rounded-2xl p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div className="flex items-start gap-4">
