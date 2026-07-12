@@ -1,8 +1,10 @@
-import { mkdir, copyFile, writeFile } from 'node:fs/promises'
+import { mkdir, copyFile, readFile, writeFile } from 'node:fs/promises'
 import { basename, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type { Artifact } from './domain.js'
 import { Storage } from '@google-cloud/storage'
+
+type BucketLike = { name?: string; file(name: string): { save(value: Buffer | string, options?: unknown): Promise<unknown> } }
 
 export interface ArtifactStore {
   saveFile(runId: string, kind: Artifact['kind'], source: string): Promise<Artifact>
@@ -10,26 +12,42 @@ export interface ArtifactStore {
 }
 
 export class GcsArtifactStore implements ArtifactStore {
-  private readonly bucket
-  constructor(bucket: string, private readonly prefix = 'freebug', private readonly publicBaseUrl?: string) {
-    this.bucket = new Storage().bucket(bucket)
+  private readonly bucket: BucketLike
+  private readonly prefix: string
+  private readonly publicBaseUrl?: string
+
+  constructor(bucket: string, prefix?: string, publicBaseUrl?: string)
+  constructor(bucket: BucketLike, publicBaseUrl?: string)
+  constructor(bucket: string | BucketLike, second = 'runs', third?: string) {
+    if (typeof bucket === 'string') {
+      this.bucket = new Storage().bucket(bucket)
+      this.prefix = second || 'runs'
+      this.publicBaseUrl = third
+    } else {
+      this.bucket = bucket
+      this.prefix = 'runs'
+      this.publicBaseUrl = second ? `https://${second.replace(/^https?:\/\//, '').replace(/\/$/, '')}` : undefined
+    }
   }
-  private artifact(runId: string, kind: Artifact['kind'], name: string): Artifact {
+
+  private target(runId: string, name: string) {
+    if (!/^[A-Za-z0-9_-]+$/.test(runId)) throw new Error('Invalid run ID')
     const object = `${this.prefix.replace(/^\/+|\/+$/g, '')}/${runId}/${randomUUID()}-${basename(name)}`
     const base = this.publicBaseUrl?.replace(/\/$/, '')
-    return { id: randomUUID(), kind, url: base ? `${base}/${object}` : `gs://${this.bucket.name}/${object}` }
+    const url = base ? `${base}/${object}` : `gs://${this.bucket.name ?? 'bucket'}/${object}`
+    return { object, url }
   }
+
   async saveFile(runId: string, kind: Artifact['kind'], source: string) {
-    const artifact = this.artifact(runId, kind, source)
-    const object = artifact.url.startsWith('gs://') ? artifact.url.split('/').slice(3).join('/') : new URL(artifact.url).pathname.replace(/^\//, '')
-    await this.bucket.upload(source, { destination: object })
-    return artifact
+    const target = this.target(runId, source)
+    await this.bucket.file(target.object).save(await readFile(source))
+    return { id: randomUUID(), kind, url: target.url }
   }
+
   async saveJson(runId: string, kind: Artifact['kind'], name: string, value: unknown) {
-    const artifact = this.artifact(runId, kind, name)
-    const object = artifact.url.startsWith('gs://') ? artifact.url.split('/').slice(3).join('/') : new URL(artifact.url).pathname.replace(/^\//, '')
-    await this.bucket.file(object).save(JSON.stringify(value, null, 2), { contentType: 'application/json' })
-    return artifact
+    const target = this.target(runId, name)
+    await this.bucket.file(target.object).save(JSON.stringify(value, null, 2), { contentType: 'application/json' })
+    return { id: randomUUID(), kind, url: target.url }
   }
 }
 

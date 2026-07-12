@@ -27,7 +27,7 @@ export class OpenAIPlanner implements Planner {
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: `Act as ${this.role} testing agent. Create a safe browser test plan as JSON: {summary,tests:[{id,title,steps}]}. Allowed step actions: goto(path same-origin only), click(role button|link,name), fill(label,value), assertText(text), scanAccessibility. Never emit code or external URLs.` },
-          { role: 'user', content: `Mode: ${run.mode}. Target: ${run.targetUrl}. Repository: ${run.repository ?? 'not supplied'}. Pull request: ${run.pullRequest ?? 'not supplied'}.` },
+          { role: 'user', content: `Mode: ${run.mode}. Target: ${run.targetUrl}. Repository: ${run.repository ?? 'not supplied'}. Pull request: ${run.pullRequest ?? 'not supplied'}. Head SHA: ${run.headSha ?? 'not supplied'}. Base SHA: ${run.baseSha ?? 'not supplied'}.` },
         ],
       }),
       signal: AbortSignal.timeout(60_000),

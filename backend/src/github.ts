@@ -11,6 +11,6 @@ export function verifyGitHubSignature(rawBody: string, signature: string | undef
 export interface PullRequestWebhook {
   action: string
   repository: { full_name: string }
-  pull_request: { number: number; head?: { repo?: { clone_url?: string } } }
+  pull_request: { number: number; head: { sha: string; repo?: { clone_url?: string } }; base: { sha: string } }
   installation?: { id: number }
 }

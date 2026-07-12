@@ -21,6 +21,9 @@ export interface Run {
   targetUrl: string
   repository?: string
   pullRequest?: number
+  headSha?: string
+  baseSha?: string
+  deliveryId?: string
   email?: string
   billingReservationId?: string
   billingAccountKey?: string
