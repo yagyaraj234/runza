@@ -4,11 +4,12 @@ import { createApp } from './app.js'
 import { loadConfig } from './config.js'
 import { InMemoryEventBus } from './events.js'
 import { MemoryRunStore } from './store.js'
+import { MemoryWaitlistStore } from './waitlist.js'
 
 const config = loadConfig({ GITHUB_WEBHOOK_SECRET: 'test-secret', GITHUB_TARGET_URL: 'https://preview.example.com', PUBLIC_BASE_URL: 'http://localhost:3001', ARTIFACT_DIR: '/tmp' })
 const setup = () => {
   const store = new MemoryRunStore(); const events = new InMemoryEventBus()
-  return { app: createApp({ config, store, events }), store, events }
+  return { app: createApp({ config, store, events, waitlist: new MemoryWaitlistStore() }), store, events }
 }
 
 describe('Freebug API', () => {
@@ -25,6 +26,17 @@ describe('Freebug API', () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(body.run.model.model).toBe('custom-model'); expect(seen).toEqual([body.run.id])
   })
+  it('adds a normalized email to the waitlist', async () => {
+    const { app } = setup()
+    const response = await app.request('/v1/waitlist', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: ' Person@Example.COM ' }) })
+    expect(response.status).toBe(201)
+    expect(await response.json()).toMatchObject({ email: 'person@example.com', joined: true })
+
+    const duplicate = await app.request('/v1/waitlist', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'person@example.com' }) })
+    expect(duplicate.status).toBe(200)
+    expect(await duplicate.json()).toMatchObject({ email: 'person@example.com', joined: false })
+  })
+
   it('rejects an invalid GitHub signature', async () => {
     const { app } = setup(); const response = await app.request('/v1/github/webhook', { method: 'POST', headers: { 'x-hub-signature-256': 'sha256=bad' }, body: '{}' })
     expect(response.status).toBe(401)

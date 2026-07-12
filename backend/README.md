@@ -24,6 +24,7 @@ The API listens on `http://localhost:3001` by default.
 - `OPENAI_MODEL`: model identifier accepted by that endpoint.
 - `GITHUB_WEBHOOK_SECRET`: GitHub App webhook secret.
 - `GITHUB_TARGET_URL`: default preview/staging URL for PR runs. CI can override this with the `x-freebug-target-url` webhook header.
+- `CONVEX_URL`: Convex deployment URL used to persist waitlist signups.
 - `ARTIFACT_DIR`: local artifact directory. Use an object-storage adapter for multi-node production.
 - `SMTP_URL`: Nodemailer-compatible SMTP URL. If omitted, completion is logged.
 - `SMTP_FROM`: sender used for completion email.
@@ -53,6 +54,7 @@ curl http://localhost:3001/v1/runs/RUN_ID/report
 Endpoints:
 
 - `GET /health`
+- `POST /v1/waitlist` with `{ "email": "person@example.com" }`
 - `POST /v1/runs`
 - `GET /v1/runs/:id`
 - `GET /v1/runs/:id/report`

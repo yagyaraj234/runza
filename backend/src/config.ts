@@ -7,6 +7,7 @@ const ConfigSchema = z.object({
   OPENAI_MODEL: z.string().default('gpt-4.1-mini'),
   GITHUB_WEBHOOK_SECRET: z.string().default(''),
   GITHUB_TARGET_URL: z.string().url().optional(),
+  CONVEX_URL: z.string().url().or(z.literal('')).default(''),
   REDIS_URL: z.string().default('redis://localhost:6379'),
   ARTIFACT_DIR: z.string().default('./data/artifacts'),
   SMTP_URL: z.string().default(''),

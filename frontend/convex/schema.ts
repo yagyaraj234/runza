@@ -11,4 +11,7 @@ export default defineSchema({
     text: v.string(),
     completed: v.boolean(),
   }),
+  waitlist: defineTable({
+    email: v.string(),
+  }).index('by_email', ['email']),
 })

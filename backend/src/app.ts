@@ -9,18 +9,26 @@ import type { EventBus } from './events.js'
 import { verifyGitHubSignature, type PullRequestWebhook } from './github.js'
 import type { Run } from './domain.js'
 import type { RunStore } from './store.js'
+import type { WaitlistStore } from './waitlist.js'
 
 const CreateRunSchema = z.object({
   mode: z.enum(['pr', 'discovery']), targetUrl: z.string().url(), repository: z.string().optional(), pullRequest: z.number().int().positive().optional(), email: z.string().email().optional(),
   model: z.object({ baseUrl: z.string().url(), model: z.string().min(1) }).optional(),
 })
-export function createApp(deps: { config: Config; store: RunStore; events: EventBus }) {
+const WaitlistSchema = z.object({ email: z.string().trim().toLowerCase().email().max(254) })
+export function createApp(deps: { config: Config; store: RunStore; events: EventBus; waitlist: WaitlistStore }) {
   const app = new Hono(); app.use('*', cors()); app.get('/health', (c) => c.json({ status: 'ok' }))
   app.use('/v1/artifacts/*', serveStatic({ root: resolve(deps.config.ARTIFACT_DIR), rewriteRequestPath: (path) => path.replace(/^\/v1\/artifacts/, '') }))
   const createRun = async (input: z.infer<typeof CreateRunSchema>) => {
     const now = new Date().toISOString(); const run: Run = { id: randomUUID(), mode: input.mode, status: 'queued', targetUrl: input.targetUrl, repository: input.repository, pullRequest: input.pullRequest, email: input.email, model: input.model ?? { baseUrl: deps.config.OPENAI_BASE_URL, model: deps.config.OPENAI_MODEL }, createdAt: now, updatedAt: now }
     await deps.store.create(run); await deps.events.publish({ type: 'run.requested', runId: run.id }); return run
   }
+  app.post('/v1/waitlist', async (c) => {
+    const parsed = WaitlistSchema.safeParse(await c.req.json().catch(() => null))
+    if (!parsed.success) return c.json({ error: 'invalid_email' }, 400)
+    const result = await deps.waitlist.join(parsed.data.email)
+    return c.json({ email: parsed.data.email, ...result }, result.joined ? 201 : 200)
+  })
   app.post('/v1/runs', async (c) => {
     const parsed = CreateRunSchema.safeParse(await c.req.json().catch(() => null)); if (!parsed.success) return c.json({ error: 'invalid_request', details: parsed.error.flatten() }, 400)
     const run = await createRun(parsed.data); return c.json({ run, statusUrl: `${deps.config.PUBLIC_BASE_URL}/v1/runs/${run.id}` }, 202)
