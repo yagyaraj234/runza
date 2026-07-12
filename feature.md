@@ -61,7 +61,6 @@ Freebug is an autonomous web-application testing platform. A team connects a Git
 - Pricing catalog for $149 Starter and $499 Scale plans with Dodo hosted checkout.
 - Inline validation, loading, success, duplicate, and error states.
 - Responsive layout and accessible keyboard/focus behavior.
-- Server-driven Starter ($149/month) and Scale ($499/month) pricing with Dodo hosted checkout.
 - Product demo showing a sample run, bug, video, and user-flow diagram.
 - Documentation links, privacy statement, and contact information.
 
