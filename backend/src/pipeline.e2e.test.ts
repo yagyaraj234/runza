@@ -14,7 +14,7 @@ import { RunPipeline } from './pipeline.js'
 import type { Planner } from './planner.js'
 import { PlaywrightExecutor } from './runner.js'
 import { MemoryRunStore } from './store.js'
-import { MemoryWaitlistStore } from './waitlist.js'
+import { MemoryUserStore } from './users.js'
 
 const servers: ServerType[] = []
 const directories: string[] = []
@@ -57,7 +57,7 @@ describe('autonomous testing pipeline', () => {
     const config = loadConfig({ PUBLIC_BASE_URL: 'http://freebug.test', ARTIFACT_DIR: artifactDir })
     const store = new MemoryRunStore(), events = new InMemoryEventBus(), artifacts = new LocalArtifactStore(artifactDir, config.PUBLIC_BASE_URL), notifier = new CapturingNotifier()
     new RunPipeline({ store, events, planner: new FixedPlanner(), executor: new PlaywrightExecutor(artifacts), artifacts, notifier, publicBaseUrl: config.PUBLIC_BASE_URL }).start()
-    const app = createApp({ config, store, events, waitlist: new MemoryWaitlistStore() })
+    const app = createApp({ config, store, events, users: new MemoryUserStore() })
 
     const response = await app.request('/v1/runs', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mode: 'discovery', targetUrl, email: 'owner@example.com' }) })
     expect(response.status).toBe(202)

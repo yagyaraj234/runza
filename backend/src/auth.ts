@@ -22,7 +22,7 @@ export function signToken(email: string, secret: string): Promise<string> {
 
 export async function verifyToken(token: string, secret: string): Promise<string | undefined> {
   try {
-    const payload = await verify(token, secret)
+    const payload = await verify(token, secret, 'HS256')
     return typeof payload.sub === 'string' ? payload.sub : undefined
   } catch {
     return undefined

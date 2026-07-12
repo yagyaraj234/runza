@@ -32,6 +32,7 @@ const ConfigSchema = z
     DAYTONA_API_URL: optionalUrl,
     DAYTONA_TARGET: z.string().optional(),
     DAYTONA_SNAPSHOT: z.string().optional(),
+    DAYTONA_TIMEOUT_SECONDS: z.coerce.number().int().positive().default(900),
     GCS_BUCKET: z.string().default(''),
     GCS_PREFIX: z.string().default('freebug'),
     GCS_PUBLIC_BASE_URL: optionalUrl,

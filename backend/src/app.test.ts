@@ -27,25 +27,20 @@ describe('Freebug API', () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(body.run.model.model).toBe('custom-model'); expect(seen).toEqual([body.run.id])
   })
-  it('adds a normalized email to the waitlist', async () => {
-    const { app } = setup()
-    const response = await app.request('/v1/waitlist', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: ' Person@Example.COM ' }) })
-    expect(response.status).toBe(201)
-    expect(await response.json()).toMatchObject({ email: 'person@example.com', joined: true })
-
-    const duplicate = await app.request('/v1/waitlist', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'person@example.com' }) })
-    expect(duplicate.status).toBe(200)
-    expect(await duplicate.json()).toMatchObject({ email: 'person@example.com', joined: false })
-  })
 
   it('rejects an invalid GitHub signature', async () => {
     const { app } = setup(); const response = await app.request('/v1/github/webhook', { method: 'POST', headers: { 'x-hub-signature-256': 'sha256=bad' }, body: '{}' })
     expect(response.status).toBe(401)
   })
-  it('accepts a signed pull request webhook', async () => {
-    const { app } = setup(); const body = JSON.stringify({ action: 'opened', repository: { full_name: 'acme/app' }, pull_request: { number: 7 } })
+  it('accepts a signed pull request webhook with PR metadata and deduplicates its delivery', async () => {
+    const { app, events } = setup(); const seen: string[] = []; events.subscribe(async event => { seen.push(event.runId) })
+    const body = JSON.stringify({ action: 'opened', repository: { full_name: 'acme/app' }, pull_request: { number: 7, head: { sha: 'head-sha' }, base: { sha: 'base-sha' } } })
     const signature = `sha256=${createHmac('sha256', 'test-secret').update(body).digest('hex')}`
-    const response = await app.request('/v1/github/webhook', { method: 'POST', headers: { 'x-hub-signature-256': signature, 'x-github-event': 'pull_request' }, body })
+    const headers = { 'x-hub-signature-256': signature, 'x-github-event': 'pull_request', 'x-github-delivery': 'delivery-1' }
+    const response = await app.request('/v1/github/webhook', { method: 'POST', headers, body })
     expect(response.status).toBe(202); expect(await response.json()).toMatchObject({ accepted: true, pullRequest: 7 })
+    const duplicate = await app.request('/v1/github/webhook', { method: 'POST', headers, body })
+    expect(duplicate.status).toBe(200); expect(await duplicate.json()).toMatchObject({ accepted: false, reason: 'duplicate_delivery' })
+    await new Promise(resolve => setTimeout(resolve, 0)); expect(seen).toHaveLength(1)
   })
 })
