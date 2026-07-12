@@ -46,6 +46,13 @@ export class GitHubApp {
     return result.token
   }
 
+  async listInstallations(): Promise<Array<{ id: number; account: string }>> {
+    const result = await this.api<Array<{ id: number; account: { login: string } | null }>>(
+      '/app/installations?per_page=100', this.appJwt()
+    )
+    return result.map(installation => ({ id: installation.id, account: installation.account?.login ?? 'unknown' }))
+  }
+
   async listRepos(installationId: string): Promise<InstallationRepo[]> {
     const token = await this.installationToken(installationId)
     const result = await this.api<{ repositories: Array<{ full_name: string; private: boolean; html_url: string }> }>(

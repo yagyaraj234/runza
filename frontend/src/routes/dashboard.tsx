@@ -13,12 +13,14 @@ import {
 import RunzaLogo from '../components/RunzaLogo';
 import {
   githubInstallUrl,
+  listInstallations,
   listRepos,
   listRuns,
   logout,
   me,
   saveInstallation,
   type AuthUser,
+  type Installation,
   type Repo,
   type Run,
 } from '../lib/auth';
@@ -87,8 +89,21 @@ function DashboardPage() {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [runs, setRuns] = useState<Run[]>([]);
   const [installUrl, setInstallUrl] = useState('');
+  const [installations, setInstallations] = useState<Installation[]>([]);
   const [loading, setLoading] = useState(true);
   const [githubError, setGithubError] = useState('');
+  const [connecting, setConnecting] = useState(false);
+
+  async function connectInstallation(id: number) {
+    setConnecting(true);
+    try {
+      await saveInstallation(String(id));
+      window.location.reload();
+    } catch {
+      setGithubError('Could not save the installation. Try again.');
+      setConnecting(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -117,12 +132,16 @@ function DashboardPage() {
         setRepos(repoList);
         setRuns(runList);
       } else {
-        const url = await githubInstallUrl().catch(() => {
-          setGithubError('GitHub App is not configured on the server.');
-          return '';
-        });
+        const [url, existing] = await Promise.all([
+          githubInstallUrl().catch(() => {
+            setGithubError('GitHub App is not configured on the server.');
+            return '';
+          }),
+          listInstallations().catch(() => []),
+        ]);
         if (cancelled) return;
         setInstallUrl(url);
+        setInstallations(existing);
       }
       setLoading(false);
     })();
@@ -263,6 +282,38 @@ function DashboardPage() {
                       className="fb-cta-glow fb-press mt-5 inline-flex items-center gap-2 rounded-full bg-[#2B4BF2] px-6 py-3 text-sm font-semibold text-white no-underline transition hover:brightness-95">
                       <Github size={15} /> Connect GitHub
                     </a>
+                  )}
+
+                  {installations.length > 0 && (
+                    <div className="mt-6 border-t border-black/5 pt-5">
+                      <p className="fb-mono m-0 text-[10px] tracking-[2px] text-[#8A92C0] uppercase">
+                        Already installed
+                      </p>
+                      <p className="mt-2 text-[13px] text-[#545C8C]">
+                        Found existing installations of the app. Link one to
+                        your account:
+                      </p>
+                      <ul className="mt-3 list-none space-y-2 p-0">
+                        {installations.map(installation => (
+                          <li key={installation.id}>
+                            <button
+                              type="button"
+                              disabled={connecting}
+                              onClick={() => connectInstallation(installation.id)}
+                              className="flex w-full items-center gap-2 rounded-xl bg-[#F6F7FB] px-4 py-3 text-left text-sm text-[#131B4D] transition hover:bg-[#EEF2FE] disabled:opacity-60">
+                              <Github size={14} className="shrink-0 text-[#8A92C0]" />
+                              <span className="font-medium">{installation.account}</span>
+                              <span className="fb-mono ml-auto text-[11px] text-[#8A92C0]">
+                                #{installation.id}
+                              </span>
+                              <span className="text-xs font-semibold text-[#2B4BF2]">
+                                {connecting ? 'Linking…' : 'Use'}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </>
               )}

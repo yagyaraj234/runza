@@ -78,6 +78,14 @@ export const saveInstallation = (installationId: string) =>
 
 export const listRepos = async () => (await request<{ repos: Repo[] }>('/v1/github/repos')).repos
 
+export interface Installation {
+  id: number
+  account: string
+}
+
+export const listInstallations = async () =>
+  (await request<{ installations: Installation[] }>('/v1/github/installations')).installations
+
 export const listRuns = async () => (await request<{ runs: Run[] }>('/v1/runs')).runs
 
 export const errorCode = (error: unknown) => (error instanceof ApiError ? error.code : 'request_failed')
