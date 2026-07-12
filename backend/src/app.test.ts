@@ -5,7 +5,7 @@ import { loadConfig } from './config.js'
 import { InMemoryEventBus } from './events.js'
 import { MemoryRunStore } from './store.js'
 
-const config = loadConfig({ GITHUB_WEBHOOK_SECRET: 'test-secret', PUBLIC_BASE_URL: 'http://localhost:3001' })
+const config = loadConfig({ GITHUB_WEBHOOK_SECRET: 'test-secret', GITHUB_TARGET_URL: 'https://preview.example.com', PUBLIC_BASE_URL: 'http://localhost:3001', ARTIFACT_DIR: '/tmp' })
 const setup = () => {
   const store = new MemoryRunStore(); const events = new InMemoryEventBus()
   return { app: createApp({ config, store, events }), store, events }
@@ -22,6 +22,7 @@ describe('Freebug API', () => {
     const response = await app.request('/v1/runs', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mode: 'discovery', targetUrl: 'https://example.com', model: { baseUrl: 'https://models.example/v1', model: 'custom-model' } }) })
     expect(response.status).toBe(202)
     const body = await response.json() as any
+    await new Promise((resolve) => setTimeout(resolve, 0))
     expect(body.run.model.model).toBe('custom-model'); expect(seen).toEqual([body.run.id])
   })
   it('rejects an invalid GitHub signature', async () => {
