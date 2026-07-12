@@ -1,24 +1,53 @@
-import { Link } from '@tanstack/react-router'
-import ThemeToggle from './ThemeToggle'
+import { Link } from '@tanstack/react-router';
+import RunzaLogo from './RunzaLogo';
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
-      <nav className="page-wrap flex items-center gap-4 py-3 sm:py-4" aria-label="Primary navigation">
-        <Link to="/" className="inline-flex items-center gap-2 rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-4 py-2 text-sm font-extrabold tracking-tight text-[var(--sea-ink)] no-underline shadow-[0_8px_24px_rgba(30,90,72,0.08)]">
-          <span className="h-2.5 w-2.5 rounded-full bg-[linear-gradient(90deg,#56c6be,#7ed3bf)] shadow-[0_0_0_4px_rgba(79,184,178,0.14)]" />
-          Freebug
+    <header className="sticky top-0 z-40 bg-white/80 [backdrop-filter:blur(20px)_saturate(180%)]">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-8">
+        <Link
+          to="/"
+          className="text-[#131B4D] no-underline"
+          aria-label="Runza home">
+          <RunzaLogo className="h-8 w-auto" />
         </Link>
-        <div className="hidden items-center gap-5 text-sm font-semibold sm:flex">
-          <Link to="/" className="nav-link" activeProps={{ className: 'nav-link is-active' }}>Home</Link>
-          <Link to="/about" className="nav-link" activeProps={{ className: 'nav-link is-active' }}>About</Link>
-          <a href="https://github.com/yagyaraj234/freebug" className="nav-link" target="_blank" rel="noreferrer">GitHub</a>
+
+        <div className="hidden items-center gap-7 text-sm sm:flex">
+          <a
+            href="/#features"
+            className="text-[#3D4577] no-underline transition hover:text-[#131B4D]">
+            Product
+          </a>
+          <a
+            href="/#how-it-works"
+            className="text-[#3D4577] no-underline transition hover:text-[#131B4D]">
+            How it works
+          </a>
+          <a
+            href="/#pricing"
+            className="text-[#3D4577] no-underline transition hover:text-[#131B4D]">
+            Pricing
+          </a>
+          <a
+            href="/#docs"
+            className="text-[#3D4577] no-underline transition hover:text-[#131B4D]">
+            Docs
+          </a>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <a href="#waitlist-email" className="hidden rounded-full bg-[var(--sea-ink)] px-4 py-2 text-xs font-bold text-[var(--foam)] no-underline transition hover:-translate-y-0.5 sm:block">Join waitlist</a>
-          <ThemeToggle />
+
+        <div className="flex items-center gap-4">
+          <Link
+            to="/login"
+            className="text-sm text-[#3D4577] no-underline transition hover:text-[#131B4D]">
+            Log in
+          </Link>
+          <Link
+            to="/waitlist"
+            className="fb-press rounded-full bg-[#2B4BF2] px-4 py-2 text-xs font-semibold text-[#FFFFFF] no-underline transition hover:brightness-95">
+            Get Access
+          </Link>
         </div>
       </nav>
     </header>
-  )
+  );
 }

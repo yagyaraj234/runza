@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
@@ -118,7 +117,10 @@
 }
 
 @theme inline {
-  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, ui-sans-serif, sans-serif;
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -167,53 +169,23 @@ body {
   margin: 0;
   color: var(--sea-ink);
   font-family: var(--font-sans);
-  background-color: var(--bg-base);
-  background:
-    radial-gradient(1100px 620px at -8% -10%, var(--hero-a), transparent 58%),
-    radial-gradient(1050px 620px at 112% -12%, var(--hero-b), transparent 62%),
-    radial-gradient(720px 380px at 50% 115%, rgba(79, 184, 178, 0.1), transparent 68%),
-    linear-gradient(180deg, color-mix(in oklab, var(--sand) 68%, white) 0%, var(--foam) 44%, var(--bg-base) 100%);
+  background-color: #ffffff;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0.28;
-  background:
-    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.8), transparent 34%),
-    radial-gradient(circle at 78% 26%, rgba(79, 184, 178, 0.2), transparent 42%),
-    radial-gradient(circle at 42% 82%, rgba(47, 106, 74, 0.14), transparent 36%);
-}
+@layer base {
+  a {
+    color: var(--lagoon-deep);
+    text-decoration-color: rgba(50, 143, 151, 0.4);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0.14;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 28px 28px;
-  mask-image: radial-gradient(circle at 50% 30%, black, transparent 78%);
-}
-
-a {
-  color: var(--lagoon-deep);
-  text-decoration-color: rgba(50, 143, 151, 0.4);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-}
-
-a:hover {
-  color: #246f76;
+  a:hover {
+    color: #246f76;
+  }
 }
 
 code {
@@ -246,7 +218,9 @@ pre code {
 }
 
 .display-title {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .island-shell {
@@ -275,8 +249,16 @@ pre code {
 button,
 .island-shell,
 a {
-  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease,
-    transform 180ms ease;
+  transition: background-color var(--duration-base) var(--ease-spring),
+    color var(--duration-base) var(--ease-spring),
+    border-color var(--duration-base) var(--ease-spring),
+    transform var(--duration-base) var(--ease-spring);
+}
+
+button:active,
+.fb-press:active {
+  transform: scale(0.97);
+  transition-duration: var(--duration-fast);
 }
 
 .island-kicker {
@@ -303,7 +285,7 @@ a {
   transform: scaleX(0);
   transform-origin: left;
   background: linear-gradient(90deg, var(--lagoon), #7ed3bf);
-  transition: transform 170ms ease;
+  transition: transform var(--duration-base) var(--ease-spring);
 }
 
 .nav-link:hover,
@@ -344,4 +326,116 @@ a {
     background-color: var(--background);
     color: var(--foreground);
   }
+}
+
+.fb-landing {
+  --fb-bg: #e7ebfa;
+  --fb-bg-soft: #eef2fe;
+  --fb-text: #131b4d;
+  --fb-text-soft: #545c8c;
+  --fb-text-faint: #8a92c0;
+  --fb-nav-text: #3d4577;
+  --fb-blue: #2b4bf2;
+  --fb-blue-soft: #dbe4fe;
+  --fb-coral: #c23b4b;
+  font-family: var(--font-sans);
+  background: var(--fb-bg);
+  color: var(--fb-text);
+}
+
+.fb-landing .fb-serif {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  font-style: normal;
+}
+
+.fb-landing .fb-serif em {
+  font-style: normal;
+  color: var(--fb-blue);
+}
+
+.fb-page-shell {
+  background: #ffffff;
+}
+
+.fb-landing .fb-mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.fb-grid-texture {
+  background-image:
+    linear-gradient(rgba(34, 32, 28, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 32, 28, 0.03) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at 50% 0%, black, transparent 75%);
+}
+
+.fb-glow-orb {
+  background: radial-gradient(
+    circle,
+    rgba(93, 125, 249, 0.55) 0%,
+    rgba(155, 183, 252, 0.35) 60%,
+    rgba(231, 235, 250, 0) 100%
+  );
+  filter: blur(28px);
+}
+
+.fb-cta-glow {
+  box-shadow: 0 8px 24px rgba(43, 75, 242, 0.35);
+}
+
+.fb-bento-card {
+  border-radius: 22px;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fb-bento-card:hover {
+    transform: translateY(-3px);
+  }
+}
+
+.fb-blink {
+  animation: fb-blink 1.1s steps(1) infinite;
+}
+@keyframes fb-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.fb-input {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(34, 32, 28, 0.12);
+  background: #ffffff;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.875rem;
+  color: #131b4d;
+}
+
+.fb-input::placeholder {
+  color: #8a92c0;
+}
+
+.fb-input:focus-visible {
+  outline: 2px solid #2b4bf2;
+  outline-offset: 1px;
 }
