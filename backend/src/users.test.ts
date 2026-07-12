@@ -12,6 +12,8 @@ describe('SqliteUserStore', () => {
     await store.setInstallation('a@b.com', '9876')
     expect((await store.getByEmail('a@b.com'))?.githubInstallationId).toBe('9876')
     expect((await store.getByInstallation('9876'))?.email).toBe('a@b.com')
+    await store.create({...user,email:'other@b.com'})
+    await expect(store.setInstallation('other@b.com','9876')).rejects.toThrow('installation_already_linked')
     await expect(store.setInstallation('missing@b.com', '1')).rejects.toThrow()
   })
 })

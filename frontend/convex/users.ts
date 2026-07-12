@@ -56,6 +56,8 @@ export const setInstallation = mutation({
   args: { email: v.string(), installationId: v.string(), secret: v.string() },
   handler: async (ctx, { email, installationId, secret }) => {
     guard(secret)
+    const owner = await ctx.db.query('users').withIndex('by_installation', q => q.eq('githubInstallationId', installationId)).first()
+    if (owner && owner.email !== email) throw new Error('installation_already_linked')
     const user = await ctx.db
       .query('users')
       .withIndex('by_email', q => q.eq('email', email))

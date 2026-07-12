@@ -32,7 +32,7 @@ describe('DaytonaExecutor', () => {
     const store = new CaptureStore()
     const output = await new DaytonaExecutor(client, store, { snapshot: 'playwright', timeoutSeconds: 120 }).execute(run)
     expect(remote.get('/workspace/freebug/test.mjs')?.toString()).toContain('recordVideo')
-    expect(output.results).toEqual([{ testId: 'home', status: 'passed', durationMs: 10 }])
+    expect(output.results).toEqual([{ testId: 'home', status: 'passed', durationMs: 10, artifactIds:['video-1'] }])
     expect(output.artifacts.map(a => a.kind)).toEqual(['script', 'video', 'trace'])
     expect(deleted).toBe(true)
   })

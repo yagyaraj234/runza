@@ -124,7 +124,7 @@ describe('autonomous testing pipeline', () => {
     expect(run.artifacts?.map(artifact => artifact.kind)).toEqual(
       expect.arrayContaining(['video', 'trace', 'report'])
     );
-    expect(run.reportUrl).toMatch(/\/v1\/artifacts\/.+report\.json$/);
+    expect(run.reportUrl).toBe(`http://freebug.test/dashboard/runs/${run.id}`);
     expect(notifier.runs).toHaveLength(1);
     expect(notifier.runs[0].email).toBe('owner@example.com');
   }, 30_000);

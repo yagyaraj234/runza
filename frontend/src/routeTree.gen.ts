@@ -14,6 +14,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReportsTokenRouteImport } from './routes/reports.$token'
+import { Route as DashboardRunsRunIdRouteImport } from './routes/dashboard.runs.$runId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -40,43 +42,82 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportsTokenRoute = ReportsTokenRouteImport.update({
+  id: '/reports/$token',
+  path: '/reports/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRunsRunIdRoute = DashboardRunsRunIdRouteImport.update({
+  id: '/runs/$runId',
+  path: '/runs/$runId',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/reports/$token': typeof ReportsTokenRoute
+  '/dashboard/runs/$runId': typeof DashboardRunsRunIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/reports/$token': typeof ReportsTokenRoute
+  '/dashboard/runs/$runId': typeof DashboardRunsRunIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/reports/$token': typeof ReportsTokenRoute
+  '/dashboard/runs/$runId': typeof DashboardRunsRunIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/dashboard' | '/login' | '/signup'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/dashboard'
+    | '/login'
+    | '/signup'
+    | '/reports/$token'
+    | '/dashboard/runs/$runId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/dashboard' | '/login' | '/signup'
-  id: '__root__' | '/' | '/about' | '/dashboard' | '/login' | '/signup'
+  to:
+    | '/'
+    | '/about'
+    | '/dashboard'
+    | '/login'
+    | '/signup'
+    | '/reports/$token'
+    | '/dashboard/runs/$runId'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/dashboard'
+    | '/login'
+    | '/signup'
+    | '/reports/$token'
+    | '/dashboard/runs/$runId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ReportsTokenRoute: typeof ReportsTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,15 +157,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reports/$token': {
+      id: '/reports/$token'
+      path: '/reports/$token'
+      fullPath: '/reports/$token'
+      preLoaderRoute: typeof ReportsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/runs/$runId': {
+      id: '/dashboard/runs/$runId'
+      path: '/runs/$runId'
+      fullPath: '/dashboard/runs/$runId'
+      preLoaderRoute: typeof DashboardRunsRunIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
+
+interface DashboardRouteChildren {
+  DashboardRunsRunIdRoute: typeof DashboardRunsRunIdRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardRunsRunIdRoute: DashboardRunsRunIdRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ReportsTokenRoute: ReportsTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

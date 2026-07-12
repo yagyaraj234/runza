@@ -17,6 +17,14 @@ npm run dev
 
 The API listens on `http://localhost:3001` by default.
 
+To exercise the complete PR path without a GitHub repository, run:
+
+```bash
+npm run simulate:pr
+```
+
+This sends a correctly signed `pull_request` delivery into the real webhook handler, inspects a local broken staging site, verifies the OpenAI-compatible contract at `OPENAI_BASE_URL=http://localhost:8787/v1` using `OPENAI_MODEL=gpt-5.4-mini`, runs five pinned Playwright regressions, records one video for the whole primary run, reruns failures without extra videos, writes local proof artifacts, and records the GitHub Check/sticky-comment calls. No OpenAI API key is required for this local simulation.
+
 ## Configuration
 
 - `OPENAI_BASE_URL`: any OpenAI-compatible `/v1` URL.
@@ -35,6 +43,9 @@ The API listens on `http://localhost:3001` by default.
 - `DAYTONA_API_KEY`: required for PR runs; each PR run gets one ephemeral sandbox.
 - `DAYTONA_API_URL`, `DAYTONA_TARGET`, `DAYTONA_SNAPSHOT`: optional Daytona overrides.
 - `GCS_BUCKET`, `GCS_PREFIX`, `GCS_PUBLIC_BASE_URL`: optional GCS artifact storage. Authentication uses Google Application Default Credentials.
+- `DASHBOARD_BASE_URL`: frontend origin used by GitHub Checks and PR comments.
+- `RUNS_DB_PATH`: SQLite database for durable runs, deliveries, repository settings, and encrypted test secrets.
+- `DATA_ENCRYPTION_KEY`: exactly 32 random bytes encoded as base64.
 - `SMTP_URL`: Nodemailer-compatible SMTP URL. If omitted, completion is logged.
 - `SMTP_FROM`: sender used for completion email.
 
@@ -69,10 +80,15 @@ Endpoints:
 - `GET /v1/runs/:id/report`
 - `GET /v1/artifacts/:runId/:file`
 - `POST /v1/github/webhook`
+- `GET|PUT /v1/repos/:owner/:repo/settings`
+- `PUT|DELETE /v1/repos/:owner/:repo/secrets/:name`
+- `POST /v1/repos/:owner/:repo/settings/verify`
+- `GET /v1/share/runs/:token`
+- `POST /v1/artifacts/:id/url`
 
 ## GitHub integration
 
-The RunzaAI GitHub App uses repository permissions for Contents (read), Pull requests (read), Checks (read/write), and Deployments (read). It subscribes to Pull request, Deployment, and Deployment status events; GitHub sends installation lifecycle events automatically. The current MVP handles Pull request actions `opened`, `reopened`, and `synchronize`; other subscriptions support the Phase 3 workflow described in `feature.md`.
+The RunzaAI GitHub App uses repository permissions for Contents (read), Pull requests (read), Checks (read/write), Issues (read/write, for the sticky PR comment), and Deployments (read). It subscribes to Pull request, Deployment, and Deployment status events; GitHub sends installation lifecycle events automatically. The current MVP handles Pull request actions `opened`, `reopened`, and `synchronize`; other subscriptions support the Phase 3 workflow described in `feature.md`.
 
 For local development, set the App webhook URL to `GITHUB_WEBHOOK_PROXY_URL`, then run both processes:
 

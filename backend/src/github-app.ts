@@ -6,6 +6,7 @@ export interface InstallationRepo {
   private: boolean
   htmlUrl: string
 }
+export interface PullRequestFile { filename: string; status: string; patch?: string }
 
 const GITHUB_API = 'https://api.github.com'
 const b64url = (value: object) => Buffer.from(JSON.stringify(value)).toString('base64url')
@@ -67,6 +68,36 @@ export class GitHubApp {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ body }),
+    })
+  }
+
+  async pullRequestFiles(installationId: string, repoFullName: string, pullRequest: number): Promise<PullRequestFile[]> {
+    const token = await this.installationToken(installationId)
+    return this.api(`/repos/${repoFullName}/pulls/${pullRequest}/files?per_page=100`, token)
+  }
+
+  async createCheckRun(installationId: string, repoFullName: string, headSha: string, detailsUrl: string) {
+    const token = await this.installationToken(installationId)
+    return this.api<{id:number}>(`/repos/${repoFullName}/check-runs`, token, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Runza PR tests', head_sha: headSha, status: 'in_progress', details_url: detailsUrl, output: { title: 'Runza is preparing tests', summary: 'Inspecting PR changes and staging UI.' } }),
+    })
+  }
+
+  async updateCheckRun(installationId: string, repoFullName: string, checkRunId: number, input: {conclusion:'success'|'failure'|'neutral'|'action_required';detailsUrl:string;title:string;summary:string}) {
+    const token = await this.installationToken(installationId)
+    await this.api(`/repos/${repoFullName}/check-runs/${checkRunId}`, token, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ status: 'completed', conclusion: input.conclusion, completed_at: new Date().toISOString(), details_url: input.detailsUrl, output: { title: input.title, summary: input.summary } }),
+    })
+  }
+
+  async upsertIssueComment(installationId: string, repoFullName: string, issueNumber: number, marker: string, body: string): Promise<void> {
+    const token = await this.installationToken(installationId)
+    const comments = await this.api<Array<{id:number;body?:string}>>(`/repos/${repoFullName}/issues/${issueNumber}/comments?per_page=100`, token)
+    const existing = comments.find(comment => comment.body?.includes(marker))
+    await this.api(existing ? `/repos/${repoFullName}/issues/comments/${existing.id}` : `/repos/${repoFullName}/issues/${issueNumber}/comments`, token, {
+      method: existing ? 'PATCH' : 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ body: `${marker}\n${body}` }),
     })
   }
 }

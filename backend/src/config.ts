@@ -11,7 +11,9 @@ const positiveInteger = z.coerce.number().int().positive().optional();
 const ConfigSchema = z
   .object({
     PORT: z.coerce.number().int().positive().default(3001),
+    NODE_ENV: z.string().default('development'),
     PUBLIC_BASE_URL: z.string().url().default('http://localhost:3001'),
+    DASHBOARD_BASE_URL: z.string().url().default('http://localhost:3000'),
     OPENAI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
     OPENAI_API_KEY: z.string().default(''),
     OPENAI_MODEL: z.string().default('gpt-4.1-mini'),
@@ -24,8 +26,10 @@ const ConfigSchema = z
     GITHUB_TARGET_URL: optionalUrl,
     CONVEX_URL: z.string().url().or(z.literal('')).default(''),
     AUTH_SECRET: z.string().default('dev-secret-change-me'),
+    DATA_ENCRYPTION_KEY: z.string().default('AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE='),
     AUTH_BRIDGE_SECRET: z.string().default(''),
     USERS_DB_PATH: z.string().default('./data/users.db'),
+    RUNS_DB_PATH: z.string().default('./data/runs.db'),
     REDIS_URL: z.string().default('redis://localhost:6379'),
     ARTIFACT_DIR: z.string().default('./data/artifacts'),
     PLANNER_AGENTS: z.string().default('smoke,functional,accessibility'),
@@ -51,8 +55,7 @@ const ConfigSchema = z
     DODO_RETURN_URL: optionalUrl,
   })
   .superRefine((config, context) => {
-    if (!config.BILLING_ENABLED) return;
-    for (const key of [
+    if (config.BILLING_ENABLED) for (const key of [
       'DODO_API_KEY',
       'DODO_WEBHOOK_KEY',
       'DODO_STARTER_PRODUCT_ID',
@@ -68,6 +71,10 @@ const ConfigSchema = z
           path: [key],
           message: 'required when billing is enabled',
         });
+    if (config.NODE_ENV === 'production' && config.AUTH_SECRET === 'dev-secret-change-me')
+      context.addIssue({ code:'custom', path:['AUTH_SECRET'], message:'must be changed in production' })
+    if (config.NODE_ENV === 'production' && config.DATA_ENCRYPTION_KEY === 'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=')
+      context.addIssue({ code:'custom', path:['DATA_ENCRYPTION_KEY'], message:'must be changed in production' })
   });
 export type Config = z.infer<typeof ConfigSchema>;
 export const loadConfig = (env: NodeJS.ProcessEnv = process.env): Config =>

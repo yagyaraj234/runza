@@ -1,4 +1,4 @@
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { sign, verify } from 'hono/jwt'
 
 export function hashPassword(password: string): string {
@@ -27,4 +27,21 @@ export async function verifyToken(token: string, secret: string): Promise<string
   } catch {
     return undefined
   }
+}
+
+export const createShareToken = (runId: string, nonce: string, secret: string) =>
+  `${runId}.${nonce}.${createHmac('sha256', secret).update(`${runId}.${nonce}`).digest('base64url')}`
+
+export function verifyShareToken(token: string, runId: string, nonce: string | undefined, secret: string) {
+  if (!nonce) return false
+  const expected = Buffer.from(createShareToken(runId, nonce, secret)), actual = Buffer.from(token)
+  return expected.length === actual.length && timingSafeEqual(expected, actual)
+}
+
+export const createArtifactSignature=(runId:string,artifactId:string,expires:number,secret:string)=>
+  createHmac('sha256',secret).update(`${runId}.${artifactId}.${expires}`).digest('base64url')
+export function verifyArtifactSignature(runId:string,artifactId:string,expires:number,signature:string,secret:string){
+  if(!Number.isFinite(expires)||expires<Date.now())return false
+  const expected=Buffer.from(createArtifactSignature(runId,artifactId,expires,secret)),actual=Buffer.from(signature)
+  return expected.length===actual.length&&timingSafeEqual(expected,actual)
 }

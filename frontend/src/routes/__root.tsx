@@ -62,7 +62,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const isAuthPage =
     pathname === '/login' ||
     pathname === '/signup' ||
-    pathname.startsWith('/dashboard');
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/reports/');
 
   return (
     <html lang="en" suppressHydrationWarning>

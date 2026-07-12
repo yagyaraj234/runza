@@ -29,6 +29,8 @@ export class MemoryUserStore implements UserStore {
     return user ? { ...user } : undefined
   }
   async setInstallation(email: string, installationId: string) {
+    for (const candidate of this.users.values())
+      if (candidate.email !== email && candidate.githubInstallationId === installationId) throw new Error('installation_already_linked')
     const user = this.users.get(email)
     if (!user) throw new Error(`User ${email} not found`)
     user.githubInstallationId = installationId
@@ -51,7 +53,7 @@ export class SqliteUserStore implements UserStore {
       password_hash TEXT NOT NULL,
       github_installation_id TEXT,
       created_at TEXT NOT NULL
-    )`)
+    ); CREATE UNIQUE INDEX IF NOT EXISTS users_installation_unique ON users(github_installation_id) WHERE github_installation_id IS NOT NULL`)
   }
   private toUser(row: Record<string, unknown> | undefined): User | undefined {
     if (!row) return undefined
@@ -76,6 +78,8 @@ export class SqliteUserStore implements UserStore {
     return this.toUser(this.db.prepare('SELECT * FROM users WHERE email = ?').get(email) as Record<string, unknown> | undefined)
   }
   async setInstallation(email: string, installationId: string) {
+    const owner=this.db.prepare('SELECT email FROM users WHERE github_installation_id = ?').get(installationId) as {email:string}|undefined
+    if(owner&&owner.email!==email)throw new Error('installation_already_linked')
     const result = this.db.prepare('UPDATE users SET github_installation_id = ? WHERE email = ?').run(installationId, email)
     if (result.changes === 0) throw new Error(`User ${email} not found`)
   }

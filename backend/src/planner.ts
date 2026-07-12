@@ -5,6 +5,7 @@ const StepSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('goto'), path: z.string().regex(/^\/(?!\/)/, 'path must be same-origin') }),
   z.object({ action: z.literal('click'), role: z.enum(['button', 'link']), name: z.string().min(1) }),
   z.object({ action: z.literal('fill'), label: z.string().min(1), value: z.string() }),
+  z.object({ action: z.literal('fillSecret'), label: z.string().min(1), secretRef: z.string().regex(/^[A-Z][A-Z0-9_]*$/) }),
   z.object({ action: z.literal('assertText'), text: z.string().min(1) }),
   z.object({ action: z.literal('scanAccessibility') }),
 ])
@@ -23,11 +24,10 @@ export class OpenAIPlanner implements Planner {
       headers: { 'content-type': 'application/json', authorization: `Bearer ${this.apiKey}` },
       body: JSON.stringify({
         model: run.model.model,
-        temperature: 0,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: `Act as ${this.role} testing agent. Create a safe browser test plan as JSON: {summary,tests:[{id,title,steps}]}. Allowed step actions: goto(path same-origin only), click(role button|link,name), fill(label,value), assertText(text), scanAccessibility. Never emit code or external URLs.` },
-          { role: 'user', content: `Mode: ${run.mode}. Target: ${run.targetUrl}. Repository: ${run.repository ?? 'not supplied'}. Pull request: ${run.pullRequest ?? 'not supplied'}. Head SHA: ${run.headSha ?? 'not supplied'}. Base SHA: ${run.baseSha ?? 'not supplied'}.` },
+          { role: 'system', content: `Act as ${this.role} testing agent. Create a safe browser test plan as JSON: {summary,tests:[{id,title,steps}]}. Allowed step actions: goto(path same-origin only), click(role button|link,name), fill(label,value), fillSecret(label,secretRef from the allowed list), assertText(text), scanAccessibility. Never emit code, secrets, or external URLs.` },
+          { role: 'user', content: JSON.stringify({ mode: run.mode, target: run.targetUrl, repository: run.repository, pullRequest: run.pullRequest, headSha: run.headSha, baseSha: run.baseSha, context: run.planningContext }) },
         ],
       }),
       signal: AbortSignal.timeout(60_000),

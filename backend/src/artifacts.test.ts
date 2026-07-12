@@ -22,8 +22,8 @@ describe('GcsArtifactStore', () => {
       const source = join(dir, 'video.webm'); await writeFile(source, 'video')
       const artifact = await store.saveFile('run-1', 'video', source)
       const report = await store.saveJson('run-1', 'report', 'report.json', { ok: true })
-      expect(artifact.url).toMatch(/^https:\/\/artifacts\.example\.com\/runs\/run-1\//)
-      expect(report.url).toContain('/runs/run-1/')
+      expect(artifact.objectKey).toMatch(/^runs\/run-1\//)
+      expect(report.objectKey).toContain('/run-1/')
       expect([...bucket.objects.keys()].every(name => name.startsWith('runs/run-1/'))).toBe(true)
       expect([...bucket.objects.values()].map(file => file.saved?.toString())).toContain('video')
     } finally { await rm(dir, { recursive: true, force: true }) }

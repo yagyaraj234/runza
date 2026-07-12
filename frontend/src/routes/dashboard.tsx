@@ -11,6 +11,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import RunzaLogo from '../components/RunzaLogo';
+import { RepositorySettingsPanel } from '../components/RepositorySettingsPanel';
 import {
   githubInstallUrl,
   listInstallations,
@@ -243,21 +244,9 @@ function DashboardPage() {
                   )}
                   <ul className="mt-4 list-none space-y-2 p-0">
                     {repos.map(repo => (
-                      <li
-                        key={repo.fullName}
-                        className="flex items-center gap-2 rounded-xl bg-[#F6F7FB] px-4 py-3 text-sm text-[#131B4D]">
-                        <span className="truncate font-medium">{repo.fullName}</span>
-                        {repo.private && (
-                          <Lock size={13} className="shrink-0 text-[#8A92C0]" />
-                        )}
-                        <a
-                          href={repo.htmlUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="ml-auto shrink-0 text-[#8A92C0] transition hover:text-[#2B4BF2]"
-                          aria-label={`Open ${repo.fullName} on GitHub`}>
-                          <ExternalLink size={14} />
-                        </a>
+                      <li key={repo.fullName} className="grid gap-3 rounded-xl bg-[#F6F7FB] px-4 py-3 text-sm text-[#131B4D]">
+                        <div className="flex items-center gap-2"><span className="truncate font-medium">{repo.fullName}</span>{repo.private&&<Lock size={13} className="shrink-0 text-[#8A92C0]"/>}<a href={repo.htmlUrl} target="_blank" rel="noreferrer" className="ml-auto shrink-0 text-[#8A92C0] transition hover:text-[#2B4BF2]" aria-label={`Open ${repo.fullName} on GitHub`}><ExternalLink size={14}/></a></div>
+                        <RepositorySettingsPanel repo={repo}/>
                       </li>
                     ))}
                     {repos.length === 0 && !githubError && (
@@ -344,9 +333,8 @@ function DashboardPage() {
               ) : runs.length > 0 ? (
                 <ul className="mt-4 list-none space-y-2 p-0">
                   {runs.map(run => (
-                    <li
-                      key={run.id}
-                      className="flex items-center gap-3 rounded-xl bg-[#F6F7FB] px-4 py-3 text-sm">
+                    <li key={run.id}>
+                    <Link to="/dashboard/runs/$runId" params={{runId:run.id}} className="flex items-center gap-3 rounded-xl bg-[#F6F7FB] px-4 py-3 text-sm no-underline transition hover:bg-[#EEF2FE] focus-visible:outline-2 focus-visible:outline-[#2B4BF2]">
                       <span
                         className="inline-block h-2 w-2 shrink-0 rounded-full"
                         style={{
@@ -363,7 +351,7 @@ function DashboardPage() {
                       <span className="hidden shrink-0 text-xs text-[#8A92C0] sm:inline">
                         {new Date(run.createdAt).toLocaleString()}
                       </span>
-                    </li>
+                    </Link></li>
                   ))}
                 </ul>
               ) : null}
