@@ -1,36 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { CircleCheck, Zap } from 'lucide-react';
-import { createCheckout, plans, type PublicPlan } from '../lib/billing';
-import { me } from '../lib/auth';
+import { CircleCheck } from 'lucide-react';
+import { plans } from '../lib/billing';
 
 export function PricingSection() {
-  const [email, setEmail] = useState('');
-  const [signedIn, setSignedIn] = useState(false);
-  const [message, setMessage] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    me().then(user => {
-      if (user) {
-        setEmail(user.email);
-        setSignedIn(true);
-      }
-    });
-  }, []);
-
-  async function buy(e: FormEvent, slug: PublicPlan['slug']) {
-    e.preventDefault();
-    setBusy(true);
-    setMessage('Opening secure checkout…');
-    try {
-      const s = await createCheckout(slug, email);
-      window.location.assign(s.url);
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : 'Checkout failed.');
-      setBusy(false);
-    }
-  }
-
   return (
     <section id="pricing" className="px-4 py-20 sm:py-24" aria-labelledby="pricing-title">
       <div className="mx-auto max-w-6xl">
@@ -43,15 +14,23 @@ export function PricingSection() {
             className="fb-serif text-[2.1rem] leading-[1.2] tracking-[-0.01em] font-medium text-[#131B4D]">
             Plans for every team.
           </h2>
-          <p aria-live="polite" className="mt-3 min-h-[1.25rem] text-sm text-[#545C8C]">
-            {message}
+          <p className="mt-3 text-sm leading-6 text-[#545C8C]">
+            Pick the monthly capacity your team needs. Every plan includes the complete testing workflow.
           </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
           {plans.map(p => (
-            <article key={p.slug} className="rounded-2xl bg-[#EEF2FE] p-8">
-              <h3 className="fb-serif text-xl font-medium text-[#131B4D]">{p.name}</h3>
+            <article
+              key={p.slug}
+              className={`relative overflow-hidden rounded-2xl border p-8 ${p.slug === 'scale' ? 'border-[#B8C4FF] bg-[#E8EDFF]' : 'border-[#E3E8F8] bg-[#F4F6FC]'}`}>
+              <div className="absolute inset-x-0 top-0 h-1 bg-[#2B4BF2]" />
+              <div className="flex items-center justify-between gap-4">
+                <h3 className="fb-serif text-xl font-medium text-[#131B4D]">{p.name}</h3>
+                <span className="fb-mono rounded-full bg-white px-3 py-1 text-[10px] tracking-[1px] text-[#545C8C] uppercase">
+                  {p.slug === 'scale' ? 'Growing teams' : 'Small teams'}
+                </span>
+              </div>
               <p className="mt-4 flex items-baseline gap-1">
                 <span className="text-4xl font-bold text-[#131B4D]">{`$${p.price / 100}`}</span>
                 <span className="text-sm text-[#8A92C0]">/month</span>
@@ -60,43 +39,17 @@ export function PricingSection() {
                 {p.includedCredits.toLocaleString()} credits included
               </p>
 
-              <ul className="m-0 mt-6 list-none space-y-3 p-0">
+              <p className="fb-mono mt-8 text-[10px] tracking-[1.5px] text-[#545C8C] uppercase">
+                What you get
+              </p>
+              <ul className="m-0 mt-3 list-none divide-y divide-[#E3E8F8] rounded-xl bg-white px-5 py-1">
                 {p.features.map(f => (
-                  <li key={f} className="flex items-center gap-3 rounded-xl bg-white px-4 py-3">
+                  <li key={f} className="flex items-center gap-3 py-4">
                     <CircleCheck size={16} color="#2F8F5B" className="flex-shrink-0" />
                     <span className="text-sm text-[#3D4577]">{f}</span>
                   </li>
                 ))}
               </ul>
-
-              <form onSubmit={e => buy(e, p.slug)} className="mt-6">
-                {signedIn ? (
-                  <p className="fb-mono text-[11px] tracking-[1px] text-[#8A92C0] uppercase">
-                    Buying as {email}
-                  </p>
-                ) : (
-                  <>
-                    <label htmlFor={`email-${p.slug}`} className="fb-mono block text-[11px] tracking-[1px] text-[#8A92C0] uppercase">
-                      Work email
-                    </label>
-                    <input
-                      id={`email-${p.slug}`}
-                      type="email"
-                      required
-                      autoComplete="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      className="fb-input mt-2"
-                    />
-                  </>
-                )}
-                <button
-                  disabled={busy}
-                  className="fb-cta-glow fb-press mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[28px] bg-[#2B4BF2] px-8 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:brightness-95 disabled:opacity-60">
-                  Choose {p.name}
-                  <Zap size={15} fill="#FFFFFF" />
-                </button>
-              </form>
             </article>
           ))}
         </div>
